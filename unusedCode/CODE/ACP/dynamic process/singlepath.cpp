@@ -1,0 +1,441 @@
+/* 动态系统之 - single path算法 */
+
+/* ---相关统计量---
+consume_link:   check_all()
+consume_space:  greedy()
+revenue & cost: update()
+*/
+
+
+#include<iostream>
+#include<fstream>
+#include<cmath>
+#include<ctime>
+using namespace std;
+ofstream fout;
+
+//---常量参数---
+#define num_i 4
+#define num_s 12
+#define N 6   
+#define B 5   
+
+//---Poisson arrive---
+#define lamda double(1)/1 //到达，每小时到达lamda个，间隔时长 1/lamda
+double miu;				//离开，每小时离开miu个，request时长 1/miu
+
+//---substrate硬件资源---
+int space[num_s];				// node space
+double link[num_i][num_s];		// link capacity
+int res_space[num_s];			// 剩余空间 residual space
+double res_link[num_i][num_s];	// 剩余带宽 residual link
+#define size_r 10*num_s/N+1		// substrate network最大能容纳request数
+
+//---VDC占用资源---
+int consume_space[size_r][num_s]; // 占用 node space
+double consume_link[size_r][num_i][num_s]; // 占用 link capacity
+//int begin_time[size_r];
+
+//----分配结果----
+int m[num_s];
+int f[num_s][num_s];
+
+//----统计参数----
+double suc; //accepted rate
+double revenue;
+double cost;
+
+//-----中间变量-----
+double total_band;
+double bw_cost;
+int num_arrive; //整个仿真过程中到来的VDC数量
+int num_accp;    //被接受的VDC数量
+int num_VDC;    //当前网络中储存的VDC数量
+
+int A[num_s+1]; // 选进去的点集
+int sum_m; //累计VM数量
+
+
+void generate()
+{
+	int i,j;
+	total_band = 0;
+
+	//----node space分布---
+	for(i=0;i<num_s;i++)
+		space[i]=5;//rand()%10+1;
+
+	//---link capacity 分布---
+	for(i=0;i<num_i;i++)
+		for(j=0;j<num_s;j++)
+			link[i][j]=rand()%6+5;//10;
+}
+
+void print_info()
+{
+	/* 打印当前硬件资源 & VDC占用资源 */
+
+	int i,j,k;
+
+	//-----打印 当前硬件资源----
+	cout<<"\ncurrent resource:";
+	cout<<"\n   node: ";
+	for(i=0;i<num_s;i++)
+		cout<<res_space[i]<<" ";
+
+	cout<<"\n   link: ";
+	for(i=0;i<num_i;i++)
+	{
+		for(j=0;j<num_s;j++)
+			cout<<res_link[i][j]<<" ";
+		cout<<" ";
+	}
+
+	//------打印 VDC占用资源-----
+	for(k=0;k<num_VDC;k++)
+	{
+		cout<<"\nVDC "<<k<<" resource:";
+		cout<<"\n   node: ";
+		for(i=0;i<num_s;i++)
+			cout<<consume_space[k][i]<<" ";
+
+		cout<<"\n   link: ";
+		for(i=0;i<num_i;i++)
+		{
+			for(j=0;j<num_s;j++)
+				cout<<consume_link[k][i][j]<<" ";
+			cout<<" ";
+		}
+	}
+	cout<<"\n\n";
+}
+void clear_file()
+{
+	//-----文档清空-----
+	fout.open("E:\\data\\paper2\\singlepath\\suc-load.txt");
+	fout.clear();
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\R-load.txt");
+	fout.clear();
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\C-load.txt");
+	fout.clear();
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\RC-load.txt");
+	fout.clear();
+	fout.close();
+}
+void clear_VDC()
+{
+	/* VDC占用资源清零 */
+
+	int i,j,k;
+
+	//---统计参数---
+	suc = 0;
+	revenue = 0;
+	cost = 0;
+	
+	//---辅助变量---
+	num_arrive = 0;
+	num_accp = 0;
+	num_VDC = 0; // num_VDC <= size_r
+
+	for(i=0;i<size_r;i++) 
+		for(j=0;j<num_i;j++)
+			for(k=0;k<num_s;k++)
+				consume_link[i][j][k]=0;
+
+	for(i=0;i<size_r;i++) 
+		for(j=0;j<num_s;j++)
+			consume_space[i][j]=0;
+
+	/*for(i=0;i<size_r;i++)
+		begin_time[i]=0;*/
+
+	for(i=0;i<num_s;i++)
+		res_space[i]=space[i];
+
+	for(i=0;i<num_i;i++)
+		for(j=0;j<num_s;j++)
+			res_link[i][j]=link[i][j];
+}
+
+void clear_alloc()
+{
+	/* 清空缓存分配信息 */
+	int i,j;
+	sum_m = 0;
+
+	for(i=0;i<num_s;i++) //VM allocation
+		m[i]=0;
+
+	for(i=0;i<=num_s;i++) 
+		A[i]=0;
+
+	for(i=0;i<num_s;i++)  //分配比例
+		for(j=0;j<num_s;j++)
+			f[i][j]=-1;
+}
+
+int check_single(int s)
+{
+	int j,k,i;
+	double max_path;
+	m[s]=res_space[s];
+
+	//---带宽分约束---
+	for(j=1;j<=A[0];j++)
+	{
+		k=A[j];
+		max_path=0;
+
+		// single path routing
+		for(i=0;i<num_i;i++)
+			if( min(res_link[i][s], res_link[i][k]) > max_path)
+			{
+				max_path = min(res_link[i][s], res_link[i][k]);
+				f[s][k] = i;
+				f[k][s] = i;
+			}
+
+		while( max_path < B* min(m[s],m[k]) )
+			m[s]--;
+	}
+
+	sum_m += m[s];
+
+	return 1;
+}
+int check_all(int i, int j, bool final_flag)
+{ 
+	int s,d,k,sum_n,n,mm;
+	double sum_t;
+	
+	s = A[j];
+	sum_n=0; // # of VM
+	sum_t=0; // # of traffic
+
+	//--作为判断条件的traffic，（类似取f最大 ，f只能取离散值0,1)
+	k=1; n = min(m[s], sum_m-m[s]);
+	while(k<=A[0] && sum_n< n)
+	{
+		if(A[k]==s) k++;
+		d = A[k];
+
+		if(f[s][d]==i) //表示path在该switch上
+		{
+			mm = min( n-sum_n , m[d]); //最坏就 mm = n-0
+
+			sum_n += mm;
+			sum_t += B*mm;
+		}
+		k++;
+	}
+
+	if(sum_t > res_link[i][s]) //---------------------------------------------------- link -> res_link ------------------
+		return 0;
+	
+	//------统计参数-----
+	//只有final_flag为true才记录，前面的调用都不统计以下参数
+	if(final_flag == 1)
+	{
+		consume_link[num_VDC][i][s] = sum_t;
+		res_link[i][s] -= sum_t;
+	}
+	
+	return 1;
+}
+
+bool greedy()
+{
+	/* 采用single path算法进行VDC嵌入 */
+
+	int s,i,j;
+
+	//---嵌入算法---
+	for(s=0;s<num_s;s++) 
+	{
+		check_single(s);
+
+		if(m[s]>0)
+		{
+			A[++A[0]]=s; //满足分约束的节点s先放入集合
+
+			//--check_all：对 link(s,i)检验，超载则对m(s)减一
+			for(j=1;j<=A[0];j++)
+				for(i=0;i<num_i;i++) 
+					while(!check_all(i,j,0))	{
+						m[A[j]]--; sum_m--;
+					}
+
+			//--VM分配成功，进行VMtraffic routing
+			if(sum_m >= N)
+			{
+				m[s] -= sum_m - N;
+
+				//对VDC分配node资源
+				for(i=0;i<num_s;i++)
+				{
+					consume_space[num_VDC][i] = m[i];
+					res_space[i] -= m[i];
+				}
+
+				//计算 link cost
+				for(j=1;j<=A[0];j++)
+					for(i=0;i<num_i;i++) 
+						check_all(i,j,1);
+
+				//成功统计量+1
+				num_accp++;
+				num_VDC++;
+				return 1;
+			}
+		}
+		
+	} 
+	return 0;
+}
+
+void update()
+{
+	/* 每时刻更新revenue,cost */
+
+	int i,s;
+
+	bw_cost = 0;
+	for(i=0;i<num_i;i++)
+		for(s=0;s<num_s;s++)
+			bw_cost += link[i][s]-res_link[i][s];
+
+	revenue += num_VDC*N + num_VDC*N*B; //kv:kb = 1:1
+	cost += num_VDC*N + bw_cost;
+}
+
+void figure()
+{
+	/* 输出曲线数据 */
+
+	double suc = double(num_accp)/num_arrive;
+	double RC = revenue/cost;
+
+	fout.open("E:\\data\\paper2\\singlepath\\suc-load.txt",ios::app);
+	fout<<suc<<" ";
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\R-load.txt",ios::app);
+	fout<<revenue<<" ";
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\C-load.txt",ios::app);
+	fout<<cost<<" ";
+	fout.close();
+
+	fout.open("E:\\data\\paper2\\singlepath\\RC-load.txt",ios::app);
+	fout<<RC<<" ";
+	fout.close();
+}
+
+void free_VDC(int x)
+{
+	int i,s,y;
+
+	//释放网络空间
+	for(i=0;i<num_i;i++)
+		for(s=0;s<num_s;s++)
+			res_link[i][s] += consume_link[x][i][s];
+
+	for(s=0;s<num_s;s++)
+		res_space[s] += consume_space[x][s];
+
+	//VDC列表删去VDC x
+	
+	for(i=0;i<num_i;i++)
+		for(s=0;s<num_s;s++)
+		{
+			for(y=x;y<num_VDC-1;y++) //VDC列表从位置0开始储存
+				consume_link[y][i][s] = consume_link[y+1][i][s];
+			consume_link[num_VDC-1][i][s] = 0;
+		}
+
+	for(s=0;s<num_s;s++)
+	{
+		for(y=x;y<num_VDC-1;y++) 
+			consume_space[y][s] = consume_space[y+1][s];
+		consume_space[num_VDC-1][s] = 0;
+	}
+
+	/*for(y=x;y<num_VDC-1;y++) 
+		begin_time[y] = begin_time[y+1];
+	begin_time[num_VDC-1] = 0;*/
+
+	num_VDC--;
+}
+
+void leave()
+{
+	/* 检查有没有VDC到期离开 */
+
+	int i;
+	double p2 = 1-exp(-miu); //该时刻 VDC离开的概率
+
+	for(i=0;i<num_VDC;i++)	 //对网络中每个VDC都轮询一遍
+	{
+		double pp = rand()/double(RAND_MAX); //产生一个0-1之间的随机数
+		if( pp < p2) 
+		{
+			//cout<<"VDC "<<i<<" has leaved\n";
+			free_VDC(i); 
+			i--; //因为是数组存储，VDC总数减少，后面VDC会整体前移
+		}
+	}
+}
+
+bool arrive()
+{
+	/* 一个新VDC到达 */
+
+	double p1 = 1-exp(-lamda); //单位时刻内，有新VDC到达的概率
+	double pp = rand()/double(RAND_MAX);
+
+	if( pp < p1)
+	{
+		//cout<<"New VDC arrived.\n";
+		num_arrive++;
+		return 1;
+	}
+	else
+		return 0;
+}
+void main()
+{
+	clear_file();
+	generate();	 // 设定硬件资源
+	for(int lasting=1; lasting<=10; lasting++)
+	{
+
+		miu = double(1)/lasting;
+		cout<<"====== R/C ratio = "<<lamda/miu<<" =======\n";
+		clear_VDC(); // VDC占用资源清零
+
+		for(int time=1;time<=100000;time++) //仿真模拟运行xx小时	
+		{
+			//cout<<"-----time "<<time<<"------\n";
+			leave(); //看看有没有VDC离开
+			if(arrive())
+			{
+				greedy();	  //为新来的request分配
+				clear_alloc(); //清空缓存分配信息
+			}
+			update(); //每时刻更新R/C信息
+			//print_info();
+		}
+
+		print_info(); //打印当前硬件资源 & VDC消耗资源
+		figure(); //输出曲线数据
+	}
+	system("pause");
+}

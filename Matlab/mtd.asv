@@ -1,0 +1,31 @@
+clear all;
+close all;
+
+
+
+%Bcube
+B= [200 250 300 350 400 ]
+
+thread1=[  21.679ms 34.2959ms 44.8063ms 53.8786ms 64.4589ms  ];   
+thread2=[16.1176ms 25.3533ms 32.784ms 40.7359ms 49.6098ms ];   
+thread3=[13.8469ms 22.1727ms 27.303ms 35.279ms 38.7603ms ];   
+thread4=[ 12.6016ms 19.4198ms 23.9291ms 27.7123ms 32.9672ms ];   
+thread5=[12.9635ms 18.6558ms 25.7094ms 30.3546ms 32.2756ms ];   
+thread6=[13.5993ms 19.7836ms 23.9182ms 29.0601ms 32.5649ms ];   
+thread7=[ 14.1275ms 20.1899ms 23.959ms 28.4524ms 31.2683ms  ];   
+thread8=[13.7336ms 21.7929ms 25.3233ms 31.4487ms 34.4515ms ];   
+
+%figure;
+subplot(1,2,1);
+h1=plot(B,thread1,B,thread2,B,thread3,B,thread4,B,thread5,B,thread6,B,thread7,B,thread8,);
+title('(a) BCube,B=100-700Mbps');
+
+xlabel('Number of VMs (N)');
+ylabel('Running time(ms)');
+legend(h1,'num_thread=1','num_thread=2','num_thread=3','num_thread=4','num_thread=5','num_thread=6','num_thread=7','num_thread=8','Location','SouthWest');
+set(gca,'XLim',[200,400]);set(gca,'XGrid','on','YGrid','on')
+set(h1,{'Color'},{'m';'g';'c';'b'});
+set(h1,{'Marker'},{'s';'+';'x';'O'},{'MarkerSize'},{8;10;10;8});
+set(h1,'LineWidth',2);
+%set(h1,'LineWidth',1.5,{'LineStyle'},{'-';'-';'-';}) 
+

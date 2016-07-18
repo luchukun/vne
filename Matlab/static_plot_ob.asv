@@ -1,0 +1,51 @@
+clear all;
+close all;
+
+%VL2
+f=[1,2,4,5];%oversubscription factor
+success_opt=[  1 1 1 0.986667 ];   %success_rate 
+success_1=[1 0.98 0.823333 0.726667 ];   %success_rate 
+success_2=[1 0.99 0.956667 0.933333 ];   %success_rate 
+success_4=[1 1 0.963333 0.926667 ];   %success_rate 
+
+ %1 0.98 0.87 0.56 0.12 
+
+figure;
+%subplot(1,2,1);
+h1=plot(f,success_opt,f,success_1,f,success_2,f,success_4);
+title('VL2,N=8,B=100~700Mbps');
+xlabel('Oversubscription ratio');
+ylabel('Success rate');
+legend(h1,'Optimal','LB(K=1)','LB(K=2)','LB(K=4)');
+set(gca,'XLim',[0.5,5.5]);
+set(gca,'XTick',[1,2,4,5])
+set(gca,'XTickLabel',{'1:1','2:1','4:1','5:1'});set(gca,'XGrid','on','YGrid','on');
+set(h1,{'Color'},{'r';'b';'g';'k';});
+set(h1,{'Marker'},{'*';'O';'s';'+';},{'MarkerSize'},{10;8;8;10;});
+set(h1,'LineWidth',1.5);
+%VL2
+%N=8;B=100-700;
+
+f=[1,2,4,5];%oversubscription factor
+
+
+suc_bktrack=[ 1 1 0.98,0.97 ];   %success_rate backtracking
+suc_pert=[1 0.995 0.97 0.94  ];   %success_rate pertuabtion
+suc_first=[1 0.93 0.79 0.71];   %success_rate fisrt fit
+suc_next=[1 0.965 0.84 0.795 ];   %success_rate fisrt fit
+suc_best=[ 0.99 0.935 0.825 0.775 ];   %success_rate fisrt fit 
+figure;
+%subplot(1,2,2);
+h1=plot(f,suc_bktrack,f,suc_pert,f,suc_first,f,suc_next,f,suc_best);
+title('VL2,N=8,B=100~700Mbps');
+xlabel('Oversubscription ratio');
+ylabel('Success rate');
+
+legend(h1,'backtracking','pertubation','first-fit','next-fit','greedy','Location','SouthWest');
+set(gca,'XLim',[0.5,5.5]);
+set(gca,'XTick',[1,2,4,5])
+set(gca,'XTickLabel',{'1:1','2:1','4:1','5:1'});set(gca,'XGrid','on','YGrid','on')
+set(h1,{'Color'},{'r';'b';'g';'m';'c'});
+set(h1,{'Marker'},{'*';'O';'s';'+';'x'},{'MarkerSize'},{10;8;8;10;10});
+set(h1,'LineWidth',1.5);
+

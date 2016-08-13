@@ -61,7 +61,7 @@ const float gbpsToR2Agg=gbpsServer2ToR*nServerInRack*oversubstription/2;//10Gbps
 const float gbpsAgg2Int=gbpsToR2Agg*oversubstription;//10Gbps
 // DCN parameters
 const int Kspt=8;//K shortest paths
-const int Kwidest=4;
+const int Kwidest=1;
 const int maxSlot=2;
 // VDC parameters
 const float muArrivaltime=2;//minute

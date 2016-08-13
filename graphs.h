@@ -101,10 +101,13 @@ public:
 #ifdef _cut_check
 	bool CutCheck(const Cluster& req,float& sumB,float* hostBw);
 #endif
+	bool oversubscribedCongestDetect(int x,OversubscriptionCluster& req,float* hostBw,float (*sum_capacity)[nServer],Solution& map,vector<int>& assignment);
 	bool oversubscribedVmpalcement(OversubscriptionCluster& req,Solution& map,int maxLoop,vector<int>& assignment);
 	bool GroupAllocate(bool enLProuting,vector<int>& servercluster,OversubscriptionCluster& req,Solution& map,vector<int>& groupassignment,float (*sum_capacity)[nServer]);
 	// the embedding algorithm
+	bool oversubscribedQuickFail(OversubscriptionCluster& req,Solution&map,float(*sum_capacity)[nServer],float& sumB,float* res_port_B);
 	bool Pertubation(Cluster &req,bool enLProuting,Solution &map);
+	bool oversubscribedFirstFit(OversubscriptionCluster &req, Solution &map);
 	bool oversusbcribedVmpalcement(OversubscriptionCluster& req,Solution&map,int maxLoop,vector<int>& assignment);
 	bool PertubationVmplacement(OversubscriptionCluster& req,Solution&,int maxpertubation,vector<int>& assignment);
 	void findserver(int& thelink,int& serverfrom,int&serverto,Solution &map,float * hostBw);

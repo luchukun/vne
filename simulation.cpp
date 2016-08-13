@@ -196,7 +196,7 @@ void static_oversubscribedembedding(char algorithm,bool enLProuting){
 	const int n = 5;
 	int numberOfGroup = 2;
 	int numOfVM[n] = {2,4,6,8,9};
-	int numberOfreq = 50, n_test = n/*,k_paths = 4*/;
+	int numberOfreq = 10, n_test = n/*,k_paths = 4*/;
 	float p = 0.5, p_minResBw = 0.5, p_maxResBw = 1;
 	float minBw = 100,maxBw = 700;
 
@@ -224,6 +224,12 @@ void static_oversubscribedembedding(char algorithm,bool enLProuting){
 			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_pertubation_lp.txt");
 	else 
 			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_pertubation.txt");
+			break;
+			case 'F':
+	if (enLProuting)
+			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_FirstFit_lp.txt");
+	else 
+			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_FirstFit.txt");
 			break;
 	default:
 			break;
@@ -1116,7 +1122,7 @@ int main()
 
 
 //simulation of placement algorithms for B=200-400,N=8
-	static_oversubscribedembedding('P',enLProuting);
+	static_oversubscribedembedding('F',enLProuting);
 	//static_embedding_B('P',enLProuting);
 	//static_embedding_B('N',enLProuting);
 	//static_embedding_B('G',enLProuting);

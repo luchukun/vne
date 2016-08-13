@@ -237,6 +237,70 @@ void output2txt(Graph& G,int size,float t[],int numOfVM[],float minBw,float maxB
 	outFile<<endl;
 	outFile.close();
 }
+void output2txt(Graph& G,int size,float t[],int numberOfGroup,int numOfVM[],float minBw,float maxBw,
+				float max_utilization[],float success_rate[],float bw[],char *filename)
+{
+	// open input file
+	ofstream outFile(filename, ios_base::out|ios_base::app);//ofstream outFile(filename);
+
+	if (!outFile) {
+	cerr << "Cannot open" <<filename<<" for output\n";
+	}
+#ifdef _FatTree
+	outFile<<"\n"<<"FatTree"<<"\n";
+#endif
+#ifdef _L2VL2
+	outFile<<"\n"<<"L2VL2"<<"\n";
+#endif
+#ifdef _VL2
+	outFile<<"\n"<<"VL2"<<"\n";
+#endif
+#ifdef _Bcube
+	outFile<<"\n"<<"Bcube"<<"\n";
+#endif
+	outFile<<"\n"<<"Kmax= "<<G.Kmax;
+	//outFile<<"\n"<<"N=( "<<minN<<" , "<<maxN<<" )";
+	outFile<<"\n"<<"B=( "<<minBw<<" , "<<maxBw<<" )";
+	outFile<<"\n"<<"max_Slot= "<<maxSlot;
+
+	outFile << "\n"<<"number of group ="<<numberOfGroup;
+	
+	int i=0;
+	
+	outFile<<"\n"<<"process time= ";
+	
+    while (i<size) {
+         outFile<<t[i]<<"ms ";
+		 i++;
+    }
+	i=0;
+	outFile<<"\n"<<"VM= ";
+    while (i<size) {
+         outFile<<numOfVM[i]<<" ";
+		 i++;
+    }
+	i=0;
+	outFile<<"\n"<<"MLU = ";
+    while (i<size) {
+         outFile<<max_utilization[i]<<" ";
+		 i++;
+    }
+	i=0;
+	outFile<<"\n"<<"success_rate = ";
+    while (i<size) {
+         outFile<<success_rate[i]<<" ";
+		 i++;
+    }
+	i=0;
+	outFile<<"\n"<<"bandwidth_cost = ";
+    while (i<size) {
+         outFile<<bw[i]<<" ";
+		 i++;
+    }
+	
+	outFile<<endl;
+	outFile.close();
+}
 
 
 void output2txt(Tree& G,int size,float t[],int numOfVM[],float minBw,float maxBw,

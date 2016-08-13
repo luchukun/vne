@@ -35,13 +35,19 @@ private:
 	Pair pass [Ne][nPair];//pass[i][j][p]表示p(s,d)经过e(i,j)
 	int n_pair[Ne];//number of pairs that passes e(i,j);
 	int opposite[Ne];
+	int costMatrix[nServer][nServer];
+	vector<vector<int>> serverCluster;//物理机分组 
+	
 public:
+	
 	int Kmax;
 	T_Routing routingOption;
 	unsigned short Kpaths[nServer][nServer][Kspt][Nv+1];//Kpaths[][][][0]存储路径长度
 	unsigned short n_path[nServer][nServer];
 	Graph();
 	~Graph();
+	void printCostMatrix();
+	void printserverCluster();
 	void drawVL2();
 	void drawVL2(float oversub_ToR,float oversub_AGG);
 	void drawFattree();
@@ -59,16 +65,20 @@ public:
 
 	float ProcessRequest(char algorithm,bool enLProuting,int numOfreq,float load,
 						float &max_utilization,float &success_rate,float &bandwidth_cost,float &RC);
-						;
+	float SingleRequest(char algorithm,bool enLProuting,int numOfreq,
+			float p,float p_minResBw,float p_maxResBw,int numberOfGroup,int min_numberOfVM, int max_numberOfVM,float minBw,float maxBw,
+			float& max_utilization,float& success_rate,float& bandwidth_cost);
 	float SingleRequest(char algorithm,bool enLProuting,int numOfreq,
 		float prob,float p_minResBw,float p_maxResBw,int  min_numOfVM,int  max_numOfVM,float minBw,float maxBw,
 		float &max_utilization,float &success_rate,float &bandwidth_cost);
+	bool oversubscribedPertubationVmplacement(OversubscriptionCluster &req,Solution& map,int maxLoop);
 	float HomoRequest(char algorithm,bool enLProuting,int numOfreq,
 		float prob,float p_minResBw,float p_maxResBw,int  numOfVM,float minBw,float maxBw,
 		float &max_utilization,float &success_rate,float &bandwidth_cost);
 
 	int Dijkstra(int s);
 	float Dijkstra(int s, int d);
+	bool calCostMatrix(int numberofCluster,int numberofVm);
 	void YenKSP(int s,int d);	
 	float LoadBalance(int s,int d);
 	float ECMP(int s,int d);
@@ -79,19 +89,25 @@ public:
 	int findBottleneck(float *hostBw,const Solution&map);
 	int findBottleneck(float *hostBw,float *TS,float *TD);
 	void updateBottlenecks(float *hostBw,const Solution&map,float *TS,float *TD);
+	bool CongestDetect(int x,const OversubscriptionCluster& req,float* hostBw,float (*sum_capacity)[nServer],Solution& map);
 	bool CongestDetect(int x,const Cluster& req,float* hostBw,float (*sum_capacity)[nServer],Solution& map);
 	float CalcMaxLinkUt(const Cluster& req,float* hostBw,Solution&map);//dual LP
 	float assignBandwidth(Cluster& req,float* hostBw,Solution& map);//|E|*min_cost_flow LP
 	float LPmaxTraffic(int e,float* hostBw);
+	float LPmaxTrafficUnderValidtraffic(OversubscriptionCluster& req,int e,float * hostBw,vector<int>& assignment);
 	float LPRouting(const Cluster& req,float* hostBw,Solution&map);//LP and calc map.bandwidth
 	float OptimalRouting(const Cluster& req,float* hostBw,Solution&map);//LP
 	bool QuickFail(Cluster& req,Solution&map,float(*sum_capacity)[nServer],float& sumB,float* res_port_B);
 #ifdef _cut_check
 	bool CutCheck(const Cluster& req,float& sumB,float* hostBw);
 #endif
+	bool oversubscribedVmpalcement(OversubscriptionCluster& req,Solution& map,int maxLoop,vector<int>& assignment);
+	bool GroupAllocate(bool enLProuting,vector<int>& servercluster,OversubscriptionCluster& req,Solution& map,vector<int>& groupassignment,float (*sum_capacity)[nServer]);
 	// the embedding algorithm
 	bool Pertubation(Cluster &req,bool enLProuting,Solution &map);
-	
+	bool oversusbcribedVmpalcement(OversubscriptionCluster& req,Solution&map,int maxLoop,vector<int>& assignment);
+	bool PertubationVmplacement(OversubscriptionCluster& req,Solution&,int maxpertubation,vector<int>& assignment);
+	void findserver(int& thelink,int& serverfrom,int&serverto,Solution &map,float * hostBw);
 	bool randomDrop(Cluster &req,bool enLProuting,Solution &map);
 	bool LocalSearch(Cluster& req,bool enLProuting,Solution& map);
 	bool FirstFit(Cluster &req,bool enLProuting,Solution &map);

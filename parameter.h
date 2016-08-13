@@ -6,7 +6,7 @@ const float Infinity=numeric_limits<float>::infinity();
 const float min_error=1e-5;
 enum T_Routing{_KshortestLB,_ECMP};
 
-#define _Bcube
+#define _VL2
 
 #ifdef _Bcube
 const int H=4;
@@ -23,7 +23,7 @@ const float gbpsCommodity=1e3;
 
 // DCN parameters
 const int Kspt=4;//K shortest paths for K shortestLB routing 
-const int Kwidest=2;
+const int Kwidest=4;
 const int maxSlot=4;
 // VDC parameters
 const float muArrivaltime=2;//minute
@@ -61,8 +61,8 @@ const float gbpsToR2Agg=gbpsServer2ToR*nServerInRack*oversubstription/2;//10Gbps
 const float gbpsAgg2Int=gbpsToR2Agg*oversubstription;//10Gbps
 // DCN parameters
 const int Kspt=8;//K shortest paths
-const int Kwidest=2;
-const int maxSlot=4;
+const int Kwidest=4;
+const int maxSlot=2;
 // VDC parameters
 const float muArrivaltime=2;//minute
 const float muHoldtime=60; //minute
@@ -88,7 +88,7 @@ const float gbpsCommodity=1e3;
 const float oversubstription=1;
 // DCN parameters
 const int Kspt=4;//K shortest paths
-const int Kwidest=2;
+const int Kwidest=3;
 const int maxSlot=4;
 // VDC parameters
 const float muArrivaltime=2;//minute

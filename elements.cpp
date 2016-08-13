@@ -61,6 +61,31 @@ void Cluster::random(int numOfVM1,int numOfVM2,float minBw,float maxBw)
 	for (int i=0;i<N;i++)
 		B[i]=unif_int(minBw,maxBw)/10*10;
 }
+//created by luchukun 
+//to define the oversubscription virtual data center
+OversubscriptionCluster::OversubscriptionCluster(const OversubscriptionCluster& rhs){
+	numberofGroup = rhs.numberofGroup;
+	numberofVms = rhs.numberofVms;
+	oversubscriptionFactor = rhs. oversubscriptionFactor;
+	bandwithLowLink = rhs.bandwithLowLink;
+	holdTime = rhs.holdTime;
+}
+void OversubscriptionCluster::random(){
+	numberofGroup = 3;//默认三组虚拟机
+	numberofVms = unif_int(minN,maxN);
+	oversubscriptionFactor = 1.25;//m默认超额认购比为1.25
+	bandwithLowLink = unif_int(minB,maxB/10*10);
+	arrivalTime=exprnd(muArrivaltime);
+	holdTime=exprnd(muHoldtime);
+}
+void OversubscriptionCluster::random(int nGroup,float o,float minN,float maxN,float minBw,float maxBw){
+	numberofGroup = nGroup;
+	numberofVms = unif_int(minN,maxN);
+	oversubscriptionFactor = o;
+	bandwithLowLink = unif_int(minB,maxB)/10*10;
+}
+
+
 // to store the embedding solution
 Solution::Solution()
 {
@@ -94,7 +119,6 @@ const Solution& Solution::operator =(const Solution &Rhs)
 		Bandwidth[i]=Rhs.Bandwidth[i];
 	for (int i=0;i<nServer;i++)
 		Slot[i]=Rhs.Slot[i];
-	
 	return *this;
 	
 }

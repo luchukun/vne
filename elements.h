@@ -113,6 +113,23 @@ struct Cluster
 	void random(int nVM,float minBw,float maxBw);
 	void random(int nVM1,int nVM2,float minBw,float maxBw);
 };
+//created bt luchukun
+//to define the ouversubscript
+struct OversubscriptionCluster
+{
+	int numberofGroup;
+	int numberofVms;
+	float oversubscriptionFactor;
+	float bandwithLowLink;
+	float arrivalTime;
+	float holdTime;
+	OversubscriptionCluster(){}
+	OversubscriptionCluster(const OversubscriptionCluster& rhs);//deep copy
+	void random();
+	//void randow(float load);
+	void random(int nGroup,float o,float minN,float maxN,float minBw,float maxBw);
+};
+
 // to store the embedding solution
 class Solution 
 {
@@ -129,6 +146,7 @@ public:
 	
 	const Solution& operator=( const Solution & Rhs );
 };
+
 
 struct Performance
 {

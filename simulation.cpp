@@ -179,6 +179,56 @@ void dynamic_embedding(char algorithm)
 	}	
 }
 #endif
+void static_oversubscribedembedding(char algorithm,bool enLProuting){
+	Graph G;
+	#ifdef _FatTree
+	G.drawFattree();
+#endif
+#ifdef _L2VL2
+	G.drawL2VL2();
+#endif
+#ifdef _VL2
+	G.drawVL2();
+#endif
+#ifdef _Bcube
+	G.drawBcube();
+#endif
+	const int n = 5;
+	int numberOfGroup = 2;
+	int numOfVM[n] = {2,4,6,8,9};
+	int numberOfreq = 50, n_test = n/*,k_paths = 4*/;
+	float p = 0.5, p_minResBw = 0.5, p_maxResBw = 1;
+	float minBw = 100,maxBw = 700;
+
+	float max_utilization[n]={0},success_rate[n]={0},bandwidth_cost[n]={0};
+
+	clock_t  Aclock,Bclock;
+
+	float running_time[n]={0};
+
+	for (int i=0;i<n_test;i++)
+	{
+		Aclock=clock();
+		G.SingleRequest(algorithm,enLProuting,numberOfreq,
+			p,p_minResBw,p_maxResBw,numberOfGroup,numOfVM[i],numOfVM[i],minBw,maxBw,
+			max_utilization[i],success_rate[i],bandwidth_cost[i]);	
+		Bclock=clock();
+		running_time[i]=1000*(float)(Bclock-Aclock)/(CLOCKS_PER_SEC*(float)numberOfreq);
+		cout<<"process time is "<<running_time[i]<<"ms"<<endl;
+
+	}
+	
+	switch(algorithm){
+			case 'P':
+	if (enLProuting)
+			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_pertubation_lp.txt");
+	else 
+			output2txt(G,n_test,running_time,numberOfGroup,numOfVM,minBw,maxBw,max_utilization,success_rate,bandwidth_cost,"oversubscred_s_pertubation.txt");
+			break;
+	default:
+			break;
+		}
+}
 void dynamic_embedding(char algorithm,bool enLProuting)
 {
 	Graph G;
@@ -269,7 +319,7 @@ void static_embedding_N(char algorithm,bool enLProuting)
 	//testKSP(G);
 	//input
 	const int n=6,m=1;
-	int numOfreq=1e3,n_test=n,k_paths=2;
+	int numOfreq=50,n_test=n,k_paths=2;
 	// param of physical networks
 	float p=0.5,p_minResBw=0,p_maxResBw=1;// with p in [0,1G]
 	// param of  VDC
@@ -1042,6 +1092,9 @@ void Homo_static_embedding_B(char algorithm)
 
 int main()
 {		
+	/*for(int i = 0;i < 100;i++){
+		cout<<rand_b01(0.5)<<endl;
+	}*/
 	//P: Pertubation; B:Backtracking; F:FirstFit
 #ifndef _Tree	
 	bool enLProuting=0;
@@ -1053,9 +1106,17 @@ int main()
 	//static_embedding_N('N',enLProuting);
 	//static_embedding_N('G',enLProuting);
 	//static_embedding_N('F',enLProuting);
-	static_embedding_N('B',enLProuting);
+	//static_embedding_N('P',enLProuting);
+	//Graph graph;
+	//graph.drawFattree();
+	//graph.calCostMatrix(4,5);
+	//graph.printCostMatrix();
+	//graph.printserverCluster();
+	//graph.SingleRequest();
+
 
 //simulation of placement algorithms for B=200-400,N=8
+	static_oversubscribedembedding('P',enLProuting);
 	//static_embedding_B('P',enLProuting);
 	//static_embedding_B('N',enLProuting);
 	//static_embedding_B('G',enLProuting);
@@ -1120,7 +1181,9 @@ int main()
 #endif
 	// finish
 	char c;
+	cout<<"Testing end";
 	cin.get(c);
 	cout<<"\n"<<"end of Main"<<"\n"<<"Type any key to continue..";
 	
 }
+ 

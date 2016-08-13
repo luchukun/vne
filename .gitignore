@@ -1,6 +1,15 @@
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+*.txt
+*.fig
+*.fig
+*.obj
+*.htm
+*.idb
+*.exe
+*.dep
+*.pdb
 
 # Folder config file
 Desktop.ini
@@ -45,6 +54,4 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-*.txt
-*.fig
-*.fig
+
